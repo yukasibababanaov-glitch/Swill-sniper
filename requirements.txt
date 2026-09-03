@@ -1,3 +1,2 @@
 telethon
 aiohttp
-nest_asyncio
