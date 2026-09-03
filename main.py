@@ -8,8 +8,7 @@ import aiohttp
 
 API_ID = int(os.environ.get('API_ID', 30983598
 ))
-API_HASH = os.environ.get('API_HASH', 'e5eb04de245730b56839e5c796ff6f92
-')
+API_HASH = os.environ.get('API_HASH', 'e5eb04de245730b56839e5c796ff6f92')
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '8669790448:AAHwC_SSTUqbGq-tnOAMImd5bmiKVztI-Dc')
 
 # Список сессий (аккаунты-доноры) — загружаем из переменной окружения или генерируем фейк-список
