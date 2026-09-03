@@ -1,21 +1,20 @@
 import asyncio
 import os
 import random
+import sys
 from telethon import TelegramClient, events, functions, types
 from telethon.tl.functions.channels import EditAdminRequest, InviteToChannelRequest
 from telethon.tl.types import ChatAdminRights
 import aiohttp
 
-# === ТВОИ ДАННЫЕ (ВСТАВЛЕНЫ) ===
+# === ТВОИ ДАННЫЕ ===
 API_ID = 30983598
 API_HASH = 'e5eb04de245730b56839e5c796ff6f92'
 BOT_TOKEN = '8669790448:AAHwC_SSTUqbGq-tnOAMImd5bmiKVztI-Dc'
 
-# Инициализация бота
 bot = TelegramClient('bot', API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
 async def get_dossier(target):
-    """Пробив по номеру или username через внешний API + Telegram"""
     async with aiohttp.ClientSession() as sess:
         if target.startswith('+'):
             url = f'https://phoneinfoga-api.onrender.com/scan?number={target}'
@@ -26,7 +25,6 @@ async def get_dossier(target):
                 data = await resp.json()
                 return data
         except:
-            # fallback — пробуем получить инфу через сам Telethon
             try:
                 entity = await bot.get_entity(target)
                 return {
@@ -40,7 +38,6 @@ async def get_dossier(target):
                 return {'error': 'Не удалось получить данные'}
 
 async def nuke(target_entity):
-    """Снос через 50 репортов с категорией child_abuse"""
     reports = 0
     for _ in range(50):
         try:
@@ -61,17 +58,13 @@ async def snip_handler(event):
     target = event.pattern_match.group(1).strip()
     await event.reply('🔍 Пробиваю и запускаю снос...')
     
-    # 1. Пробив
     dossier = await get_dossier(target)
-    
-    # 2. Снос
     try:
         entity = await bot.get_entity(target)
         nuke_res = await nuke(entity)
     except Exception as e:
         nuke_res = {'error': str(e)}
     
-    # 3. Результат
     result = {
         'target': target,
         'dossier': dossier,
@@ -84,7 +77,13 @@ async def main():
     print('✅ SWILL-SNIPER запущен и готов к работе.')
     await bot.run_until_disconnected()
 
+# === ЗАПУСК БЕЗ nest_asyncio (работает на Render) ===
 if __name__ == '__main__':
-    import nest_asyncio
-    nest_asyncio.apply()
-    asyncio.run(main())
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        pass
+    finally:
+        loop.close()
